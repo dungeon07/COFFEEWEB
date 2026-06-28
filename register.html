@@ -45,18 +45,38 @@
     </div>
 
     <script>
-        // Logic kiểm tra mật khẩu khớp nhau cơ bản
+        // Logic kiểm tra mật khẩu và lưu vào localStorage
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('password').value;
             const confirmPass = document.getElementById('confirmPassword').value;
 
             if (pass !== confirmPass) {
                 alert("Mật khẩu xác nhận không khớp!");
-            } else {
-                alert("Đăng ký thành công!");
-                window.location.href = "login.html";
+                return;
             }
+
+            // Lấy danh sách users hiện tại từ localStorage
+            let users = JSON.parse(localStorage.getItem('users')) || [];
+
+            // Kiểm tra xem email đã tồn tại chưa
+            if (users.some(u => u.email === email)) {
+                alert("Email này đã được đăng ký!");
+                return;
+            }
+
+            // Thêm user mới
+            users.push({
+                name: username,
+                email: email,
+                password: pass
+            });
+
+            localStorage.setItem('users', JSON.stringify(users));
+            alert("Đăng ký thành công!");
+            window.location.href = "login.html";
         });
     </script>
 </body>

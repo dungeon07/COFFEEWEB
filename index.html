@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coffee Shop - Trang chủ</title>
     <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
     <header>
         <nav class="navbar">
@@ -13,7 +16,24 @@
             <ul class="nav-links">
                 <li><a href="index.html">Trang chủ</a></li>
                 <li><a href="#">Thực đơn</a></li>
-                <li><a href="login.html" class="btn-login">Đăng nhập</a></li>
+                <!-- Hiển thị khi chưa đăng nhập -->
+                <li id="loginNavItem"><a href="login.html" class="btn-login">Đăng nhập</a></li>
+                <!-- Hiển thị khi đã đăng nhập -->
+                <li id="userNavItem" class="user-menu-container" style="display: none;">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-header" id="userDropdownHeader">Xin chào, User!</div>
+                        <button class="user-dropdown-item" id="btnProfile">
+                            <i class="fa-solid fa-user"></i> Xem profile
+                        </button>
+                        <button class="user-dropdown-item" id="btnOrders">
+                            <i class="fa-solid fa-clipboard-list"></i> Đơn hàng
+                        </button>
+                        <button class="user-dropdown-item logout-btn" id="btnLogout">
+                            <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                        </button>
+                    </div>
+                </li>
             </ul>
         </nav>
     </header>
@@ -46,5 +66,186 @@
             </div>
         </div>
     </section>
+
+    <!-- Modal Profile -->
+    <div id="profileModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Hồ Sơ Cá Nhân</h3>
+                <button class="modal-close" id="closeProfileModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-info">
+                    <div class="profile-avatar-large" id="profileAvatarLarge">U</div>
+                    <div class="profile-detail-card">
+                        <div class="profile-field">
+                            <span class="profile-field-label">Họ và tên:</span>
+                            <span class="profile-field-value" id="profileName">Nguyễn Văn A</span>
+                        </div>
+                        <div class="profile-field">
+                            <span class="profile-field-label">Email:</span>
+                            <span class="profile-field-value" id="profileEmail">email@example.com</span>
+                        </div>
+                        <div class="profile-field">
+                            <span class="profile-field-label">Loại tài khoản:</span>
+                            <span class="profile-field-value">Thành viên thân thiết</span>
+                        </div>
+                        <div class="profile-field">
+                            <span class="profile-field-label">Ngày tham gia:</span>
+                            <span class="profile-field-value">28/06/2026</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Đơn hàng -->
+    <div id="ordersModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Lịch Sử Đơn Hàng</h3>
+                <button class="modal-close" id="closeOrdersModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="orders-list">
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span>Đơn hàng #CB-8293</span>
+                            <span class="order-date">28/06/2026 09:30</span>
+                        </div>
+                        <div class="order-items">1x Espresso, 1x Capuchino</div>
+                        <div class="order-footer">
+                            <span class="order-total">Tổng: 80.000đ</span>
+                            <span class="order-status status-delivered">Đã giao</span>
+                        </div>
+                    </div>
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span>Đơn hàng #CB-7182</span>
+                            <span class="order-date">25/06/2026 15:20</span>
+                        </div>
+                        <div class="order-items">2x Latte Macchiato</div>
+                        <div class="order-footer">
+                            <span class="order-total">Tổng: 80.000đ</span>
+                            <span class="order-status status-delivered">Đã giao</span>
+                        </div>
+                    </div>
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span>Đơn hàng #CB-6391</span>
+                            <span class="order-date">23/06/2026 10:15</span>
+                        </div>
+                        <div class="order-items">1x Cà phê sữa đá</div>
+                        <div class="order-footer">
+                            <span class="order-total">Tổng: 30.000đ</span>
+                            <span class="order-status status-pending">Đang xử lý</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const loginNavItem = document.getElementById('loginNavItem');
+            const userNavItem = document.getElementById('userNavItem');
+            const userAvatar = document.getElementById('userAvatar');
+            const userDropdown = document.getElementById('userDropdown');
+            const userDropdownHeader = document.getElementById('userDropdownHeader');
+
+            // 1. Kiểm tra trạng thái đăng nhập và hiển thị giao diện tương ứng
+            if (currentUser) {
+                loginNavItem.style.display = 'none';
+                userNavItem.style.display = 'flex';
+
+                const name = currentUser.name || 'User';
+                // Lấy chữ cái đầu và viết hoa
+                const initial = name.trim().charAt(0).toUpperCase();
+                userAvatar.textContent = initial;
+                userDropdownHeader.textContent = `Xin chào, ${name}!`;
+            } else {
+                loginNavItem.style.display = 'block';
+                userNavItem.style.display = 'none';
+            }
+
+            // 2. Click avatar để ẩn/hiện dropdown
+            userAvatar.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const isDisplayed = userDropdown.style.display === 'flex';
+                userDropdown.style.display = isDisplayed ? 'none' : 'flex';
+            });
+
+            // 3. Click ngoài dropdown để đóng
+            document.addEventListener('click', function () {
+                if (userDropdown) {
+                    userDropdown.style.display = 'none';
+                }
+            });
+
+            // Ngăn sự kiện click trong dropdown đóng menu
+            userDropdown.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+
+            // 4. Xem Profile
+            const btnProfile = document.getElementById('btnProfile');
+            const profileModal = document.getElementById('profileModal');
+            const closeProfileModal = document.getElementById('closeProfileModal');
+            const profileAvatarLarge = document.getElementById('profileAvatarLarge');
+            const profileName = document.getElementById('profileName');
+            const profileEmail = document.getElementById('profileEmail');
+
+            btnProfile.addEventListener('click', function () {
+                if (currentUser) {
+                    const name = currentUser.name || 'User';
+                    profileAvatarLarge.textContent = name.trim().charAt(0).toUpperCase();
+                    profileName.textContent = name;
+                    profileEmail.textContent = currentUser.email || '';
+                }
+                userDropdown.style.display = 'none';
+                profileModal.style.display = 'flex';
+            });
+
+            closeProfileModal.addEventListener('click', function () {
+                profileModal.style.display = 'none';
+            });
+
+            // 5. Xem Đơn hàng
+            const btnOrders = document.getElementById('btnOrders');
+            const ordersModal = document.getElementById('ordersModal');
+            const closeOrdersModal = document.getElementById('closeOrdersModal');
+
+            btnOrders.addEventListener('click', function () {
+                userDropdown.style.display = 'none';
+                ordersModal.style.display = 'flex';
+            });
+
+            closeOrdersModal.addEventListener('click', function () {
+                ordersModal.style.display = 'none';
+            });
+
+            // Đóng các modal khi click ra ngoài vùng modal container
+            window.addEventListener('click', function (e) {
+                if (e.target === profileModal) {
+                    profileModal.style.display = 'none';
+                }
+                if (e.target === ordersModal) {
+                    ordersModal.style.display = 'none';
+                }
+            });
+
+            // 6. Đăng xuất
+            const btnLogout = document.getElementById('btnLogout');
+            btnLogout.addEventListener('click', function () {
+                localStorage.removeItem('currentUser');
+                alert("Đăng xuất thành công!");
+                window.location.reload();
+            });
+        });
+    </script>
 </body>
+
 </html>
